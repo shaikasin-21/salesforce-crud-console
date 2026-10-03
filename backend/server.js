@@ -8,6 +8,8 @@ const salesforceRoutes = require('./routes/salesforce');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(express.json());
 
 app.use(
@@ -17,6 +19,8 @@ app.use(
   })
 );
 
+const isProd = process.env.NODE_ENV === 'production';
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
@@ -24,10 +28,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // Set secure:true once you're running behind HTTPS in production
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 2, // 2 hours
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 1000 * 60 * 60 * 2,
     },
   })
 );
@@ -39,5 +42,5 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Backend listening on port ${PORT}`);
+  console.log(Backend listening on port ${PORT});
 });
